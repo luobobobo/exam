@@ -1,0 +1,100 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>考试作业系统</title>
+<link rel="stylesheet" type="text/css" href="theme/1/css/common.css">
+<link rel="stylesheet" type="text/css" href="theme/1/css/style.css">
+<link rel="stylesheet" type="text/css" href="theme/1/css/EditingArea.css">
+<link rel="stylesheet" type="text/css" href="theme/1/css/table.css">
+<link rel="stylesheet" type="text/css" href="theme/1/css/icon.css">
+<link rel="stylesheet" type="text/css" href="theme/1/css/zy.css">
+<script type="text/javascript" src="theme/1/js/jquery-2.1.4/jquery.min.js"></script>
+<script>
+	$(function(){		
+		//第一步，收起左侧列表
+		$(".baseUI>li>ul").slideUp("fast");
+		//第二步，默认展开第一个列表
+		$(".baseUI>li>ul").eq(0).stop().slideDown(300);
+		//第三步，给li绑定事件
+		$(".baseUI>li").off("click");
+		$(".baseUI>li").on("click",function(){
+			if($(this).children("ul").css("display")=="none"){
+				//先清除所有样式
+				$(".baseUI>li>ul").slideUp(500);
+				//当前点击元素展开
+				$(this).children("ul").slideDown(500);
+			}
+		});
+		//给左侧列表的子列表绑定点击事件
+		$(".baseUI>li>ul>li").off("click");
+		$(".baseUI>li>ul>li").on("click",function(){
+			if(!$(this).hasClass("current")){
+				//先清除所有背景颜色
+				$(".baseUI>li>ul>li").removeClass("current");
+				//给当前点击元素添加背景
+				$(this).addClass("current");
+				//获取当前点击li的属性url，加载右侧页面
+				var url=$(this).attr("url");
+				//获取到右侧页面div
+				$(".right").load(url);	
+			}	
+		});	
+		//默认点击列表第一个加载页面
+		$(".baseUI>li>ul>li").eq(0).trigger("click");
+	});
+</script>
+</head>
+
+<body>
+<div class="main">
+	<div id="top">
+    	<div class="top">
+        	<div class="tk_logo"></div>
+            <div class="t_sign">
+            	<span>你好，管理员</span><a href="#" class="t_exit">退出</a>
+            </div>
+            <div class="t_icon">
+            	<ul>
+                	<li><a href="#" class="t1"><span>桌面</span></a></li>
+                    <li><a href="#" class="t2"><span>换肤</span></a></li>
+                    <li><a href="#" class="t3"><span>关于</span></a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div id="cont">
+    	<div class="centent">
+        	<div class="left c_view">
+            	<ul class="baseUI">
+                	<li><a href="#"><em class="base_basicset"></em><span>题库</span></a>
+                        <ul>
+                            <li url="tpl/subject/subjectList.html"><a href="#">全部题目</a></li>
+                            <li url="tpl/subject/subjectManager.html"><a href="#">题目管理</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="#"><em class="base_userset"></em><span>试卷管理</span></a>
+                        <ul>
+                            <li><a href="#">试卷列表</a></li>
+                            <li url="tpl/subject/sgZujuan.html"><a href="#">手工组卷</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="#"><em class="base_teachergroup"></em><span>考试管理</span></a>
+                        <ul>
+                            <li><a href="#">考试列表</a></li>
+                            <li><a href="#">考试安排</a></li>
+                        </ul>
+                    </li>
+                   
+                </ul>
+            </div>
+            <div class="right">
+            	
+            </div>
+            <div class="clear"></div>
+        </div>
+    </div>
+    <div id="foot"><a href="#">上海师悦信息科技有限公司</a></div>
+</div>
+</body>
+</html>

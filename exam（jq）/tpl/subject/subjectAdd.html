@@ -1,0 +1,266 @@
+<style>
+	.Attributecontent_left select{width:100px}
+	textarea,input{font-size:12px;}
+	.Answerpart_right textarea,.Problemcontent textarea{width:90%;height:70%;border:none;padding:10px;}
+	.chapterAnswer{ display:none}
+</style>
+
+<script>
+	$(function(){
+		//返回按钮绑定事件
+		$(".deletetitle").off("click");
+		$(".deletetitle").on("click",function(){
+			var delUrl=$(".baseUI>li>ul>li.current").attr("url");
+			$(".right").load(delUrl);	
+		});	
+		
+		//封装加载数据
+		function loadJson($element,url){
+			url="tpl/data/"+url;
+			$.get(url,function(data){
+				data.forEach(function(con,index){
+					$element.append("<option value='"+con.name+"'>"+con.realName+"</option>")	
+				});	
+			});
+		};
+		
+		
+		//加载下拉框数据	
+		$("select").each(function(index,con){
+			var selectName=con.name;
+			switch(selectName){
+				case "type":
+						loadJson($(con),"type.json");
+					break;
+				case "department":
+						loadJson($(con),"department.json");
+					break;
+				case "level":
+						loadJson($(con),"level.json");
+					break;
+				case "topics":
+						loadJson($(con),"topics.json");
+					break;
+			}
+		});	
+		
+		
+		
+		//获取到下拉菜单选项，进行页面样式更改
+		//1、获取下拉菜单
+		$("select[name='type']").off("change");
+		$("select[name='type']").on("change",function(){
+			var type=$(this).val();	
+			switch(type){
+				case "radio":
+						$(".Answeroptions").show();
+						$(".chapterAnswer").hide();
+						$(".Answeroptions").find("input").attr("type","radio");
+					break;
+				case "checkbox":
+						$(".Answeroptions").show();
+						$(".chapterAnswer").hide();
+						$(".Answeroptions").find("input").attr("type","checkbox");
+					break;
+				case "charp":
+						$(".Answeroptions").hide();
+						$(".chapterAnswer").show();
+					break;			
+			}
+		});
+		
+		
+		//给保存按钮绑定事件
+		$(".btnL").off("click");
+		$(".btnL").on("click",function(){
+			//获取下拉框
+			var type=$("select[name='type']").val();
+			var department=$("select[name='department']").val();
+			var level=$("select[name='level']").val();
+			var topics=$("select[name='topics']").val();
+			
+			//获取题目题干
+			var stem=$("textarea[name='stem']").val();
+			
+			//获取答案解析
+			var analysis=$("textarea[name='analysis']").val();	
+			
+			//获取简答题的答案
+			var answer=$("textarea[name='answer']").val();
+			
+			//获取选择题答案
+			var arr=[];
+			$(".Answerpart").each(function(index,con){
+				var answerObj={};
+				var correct=$(this).find("input").prop("checked");
+				var content=$(con).find("textarea").val();
+				answerObj.id=index+1;
+				answerObj.correct=correct;
+				answerObj.content=content;
+				
+				arr.push(answerObj);
+			});
+			
+			//创建一个上传时间
+			var upTime=(new Date().getYear()-100+2000)+"-"+(new Date().getMonth()+1)+"-"+new Date().getDate()
+			
+			//封装对象，向后台传值
+			var obj={
+				type:type,
+				department:department,
+				level:level,
+				topics:topics,
+				stem:stem,
+				analysis:analysis,
+				answer:answer,
+				choices:arr,
+				upTime:upTime	
+			};
+			console.log($(this).index());
+			
+			//区分当前点击保存按钮，执行不同操作
+			
+			if($(this).index()=="0"){
+				$.post("tpl/subject/subjectAdd.html",obj,function(){
+					$(".right").load("tpl/subject/subjectAdd.html")
+				})	
+			}else{
+				var url=$(".baseUI>li>ul>li.current").attr("url");
+				$.post("tpl/subject/subjectAdd.html",obj,function(){
+					$(".right").load(url);	
+				});	
+			}
+		});
+		
+	});
+	
+	
+</script>
+
+				<!--题目添加-->
+                <div class="editingarea">
+                	
+                    <div class="c_flex"><span class="c_flexible"></span></div>
+                    <div class="chosetitle">添加题目<a href="#" class="deletetitle">删除</a></div>
+                    
+                	<div class="c_editview">
+                    	<div class="Attribute">
+                             <div class="Attributetit">题目属性</div>
+                             <div class="Attributecontent">
+                                 <div class="Attributecontent_left">
+                                     <b>
+                                     	题型：<select name="type">
+                                     		<!--<option value="radio">单选题</option>
+                                            <option value="checkbox">多选题</option>
+                                            <option value="chapter">问答题</option>-->
+                                       	</select>
+                                     </b>
+                                     <b>
+                                     	方向：<select name="department">
+                                     		
+                                       	</select>
+                                     </b>
+                                     <b>
+                                     	难度：<select name="level">
+                                     		
+                                       	</select>
+                                     </b>
+                                     <b>
+                                     	知识点：<select name="topics">
+                                     		
+                                        </select>
+                                     </b>
+                                     
+                                     <!--
+									 <div class="Attributecontent_right">
+                                     	<a href="#" class="addAttr">添加</a>
+                                        <a href="#" class="leftmove">左移</a>
+                                     </div>
+                                     -->
+                                 </div>              
+                             </div>
+                        </div>
+                        <div class="Problem">
+                            <div class="Attributetit">题目题干</div>
+                            <div>
+                                <textarea name="stem" cols="80" rows="4"></textarea>                              
+                            </div>
+                        </div>
+                        <div class="Answeroptions">
+                            <div class="Attributetit">答案选项<em>(通过勾选每个选项下面的框可以设置正确答案)</em></div>
+                            <!--<div class="c_condition"><span class="icon_add">
+                            	<em class="icon_r" style="float: left">添加选项</em></span>
+                            </div>-->
+                            <div class="Answercontent">
+                            	<!--选项-->
+                                <div class="Answerpart">
+                                     <div class="Answerpart_left">
+                                         <p>A</p><span>
+                                         <input type="radio" name="answer"/></span>
+                                     </div>
+                                     <div class="Answerpart_right">
+                                     	<textarea name="content"></textarea>   
+                                     </div>
+                                     <div class="clear"></div>
+                                </div>
+                                <div class="Answerpart">
+                                    <div class="Answerpart_left">
+                                        <p>B</p><span>
+                                        <input type="radio" name="answer"/>
+                                        </span>
+                                    </div>
+                                    <div class="Answerpart_right">
+                                    	<textarea name="content"></textarea>  
+                                    </div>
+                                    <div class="clear"></div>
+                                </div>
+                                <div class="Answerpart">
+                                    <div class="Answerpart_left">
+                                        <p>C</p><span>
+                                        <input type="radio" name="answer"/>
+                                        </span>
+                                    </div>
+                                    <div class="Answerpart_right">
+                                    	<textarea name="content"></textarea>  
+                                    </div>
+                                    <div class="clear"></div>
+                                </div>
+                                <div class="Answerpart">
+                                    <div class="Answerpart_left">
+                                        <p>D</p><span>
+                                        <input type="radio" name="answer"/>
+                                        </span>
+                                    </div>
+                                    <div class="Answerpart_right">
+                                    	<textarea name="content"></textarea>  
+                                    </div>
+                                    <div class="clear"></div>
+                                </div>
+                                <div class="clear"></div>
+                            </div>
+                        </div>
+                        <div class="Problem chapterAnswer">
+                            <div class="Attributetit">答案</div>
+                            <div class="Problemcontent">
+                            	<textarea name="answer"></textarea> 
+                            </div>
+                        </div>
+                        
+                        <div class="Problem">
+                            <div class="Attributetit">答案解析</div>
+                            <div class="Problemcontent">
+                            	<textarea name="analysis"></textarea> 
+                            </div>
+                        </div>
+                        <!--
+                        <div class="Problem">
+                            <div class="fistproblm"><span>1.</span><a href="#"></a></div>
+                            <div class="Problemcontent"></div>
+                        </div>
+                        -->
+                        <div class="btn_left">
+                            <span class="btnL"><em class="btnR">保存并继续</em></span><span class="btnL"><em class="btnR">保存并关闭</em></span>
+                        </div>
+                    </div>
+                </div>
+

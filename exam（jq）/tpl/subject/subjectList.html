@@ -1,0 +1,248 @@
+<script>
+	$(function(){
+		
+		searchData();
+			
+		//通过json数据加载a标签
+		$(".chose").each(function(index,item){
+			var id=item.id;
+			switch(id){
+				case "chose1":
+						getData($(item),"type.json");
+					break;
+				case "chose2":
+						getData($(item),"department.json");
+					break;
+				case "chose3":
+						getData($(item),"topics.json");
+					break;
+				case "chose4":
+						getData($(item),"level.json");
+					break;	
+			};
+		});
+		
+		
+		//点击更换背景颜色,使用代理
+		$(".chose").off("click");
+		$(".chose").on("click","a",function(){
+			//首先判断当前元素是否有背景颜色
+			if(!$(this).hasClass("active3")){
+				//先自己加上背景颜色，再去掉兄弟元素的背景
+				$(this).addClass("active3").siblings().removeClass("active3");
+				searchData();	
+			}
+		});
+	});
+	
+	
+	
+	//封装一个获取json数据的方法
+	function getData($element,url){
+		//获取数据
+		var url="tpl/data/"+url;
+		$.post(url,function(data){
+			$(data).each(function(index,item){
+				$element.append("<a href='#'>"+item.realName+"</a>");	
+			});
+		});
+	};
+	
+	
+	//封装筛选方法
+	function searchData(){
+		//先创建一个空对象
+		var searchObj={};
+		//往对象中添加值
+		$(".chose").each(function(index,item){
+			//获取有背景颜色的元素的值
+			var searchValue=$(this).find("a.active3").html();
+			var id=	$(this).attr("id");
+			switch(id){
+				case "chose1":
+						searchObj.type=searchValue;
+					break;
+				case "chose2":
+						searchObj.department=searchValue;
+					break;
+				case "chose3":
+						searchObj.topics=searchValue;
+					break;
+				case "chose4":
+						searchObj.level=searchValue;
+					break;
+			};
+		});
+		
+		//请求后台数据
+		var url="tpl/data/paper.json";
+		$.post(url,function(data){
+			//前后台数据匹配
+			if(searchObj.type!="全部"){
+				data=data.filter(function(item,index){
+					return searchObj.type==item.type; 	
+				}); 	
+			}
+			if(searchObj.department!="全部"){
+				data=data.filter(function(item,index){
+					return searchObj.department==item.department; 	
+				}); 	
+			}
+			if(searchObj.topics!="全部"){
+				data=data.filter(function(item,index){
+					return searchObj.topics==item.topics; 	
+				}); 	
+			}
+			if(searchObj.level!="全部"){
+				data=data.filter(function(item,index){
+					return searchObj.level==item.level; 	
+				}); 	
+			}
+			
+			
+			//遍历之前先清除子元素
+			$(".Catalogcontentup").children().remove();
+			//遍历答案，将问题和答案解析放入在大框中
+			data.forEach(function(item,index){
+				for(var key in item){
+					var newP=$("<p></p>");
+					if(key=="stem"){
+						newP.html(item[key]);	
+					}
+					if(key=="choices"){
+						var str="";
+						item[key].forEach(function(item,index){
+							str+=item.content+"&nbsp;&nbsp;&nbsp;"	;
+						});	
+						newP.html(str);	
+					}
+					if(key=="analysis"){
+						newP.attr("id","analysis");
+						newP.html(item[key]);	
+					}	
+					$(".Catalogcontentup").eq(index).append(newP);
+				}
+			});
+			
+			//一开始答案和解析隐藏
+			$("p#analysis").hide();	
+			//点击复选框，隐藏显示答案
+			$(".Catalogtitle").find(":checkbox").off("change");
+			$(".Catalogtitle").find(":checkbox").on("change",function(){
+				//判断复选框是否被选中
+				if($(this).prop("checked")){
+					$("p#analysis").show();
+				}else{
+					$("p#analysis").hide();	
+				}	
+			});
+		});
+	};
+</script>
+				<!--题干列表-->
+                <div class="editingarea">
+                    <div class="c_flex"><span class="c_flexible"></span></div>
+                	<div class="c_editview">
+                   <div class="c_condition">
+                       <span><select><option>题干</option></select></span>
+                       <span class="pl5 " ><input type="text"></span>
+                       <span class="pl15 pr15 btn_gray ">查找</span>
+                     
+                    </div>
+                    <div class="divtable">
+                        <table width="100%" border="0" cellspacing="0" cellpadding="0" class="tablea">
+                        	<tr>
+                                <td align="center">题型</td>
+                                <td align="left">
+                                    <div class="chose" id="chose1">
+                                    	<a href="#" class="active3">全部</a>
+                                        <!--
+                                        <a href="#">单选题</a>
+                                        <a href="#">多选题</a>
+                                        <a href="#">简答题</a>
+                                        -->
+                                    </div>
+                                </td>
+                                
+                            </tr>
+                            <tr>
+                                <td align="center">方向</td>
+                                <td align="left">
+                                    <div class="chose" id="chose2">
+                                    	<a href="#" class="active3">全部</a>
+                                        <!--
+                                        <a href="#">WebUI</a>
+                                        <a href="#">JavaEE</a>
+                                        <a href="#">Android</a>
+                                        <a href="#">IOS</a>
+                                        -->
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                            	<td align="center">知识点</td>
+                                <td align="left">
+                                    <div class="chose" id="chose3">
+                                    	<a href="#" class="active3">全部</a>
+                                        <!--
+                                        <a href="#">Html</a>
+                                        <a href="#">JavaScript</a>
+                                        <a href="#">CSS</a>
+                                        <a href="#">jQuery</a>
+                                        -->
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td align="center">难度</td>
+                                <td align="left">
+                                    <div class="chose" id="chose4">
+                                    	<a href="#" class="active3">全部</a>
+                                        <!--
+                                        <a href="#">容易</a>
+                                        <a href="#">中等</a>
+                                        <a href="#">难</a> 
+                                        --> 
+                                    </div>
+                                </td>
+                                
+                            </tr>
+                        </table>
+                    </div>
+                       <div class="Catalog">
+                           
+                           <div class="Catalog_right">
+                               <div class="Catalogtitle">
+                               	总计<em>15552</em>道题&nbsp;&nbsp;
+                                <input type="checkbox" />
+                                <b>显示答案和解析</b>&nbsp;&nbsp;
+                               
+                                <!--
+                                   <div>
+                                       <i>1</i>
+                                       <a href="#" class="pageone">前</a>
+                                       <a href="#" class="pagetwo">后</a>
+                                   </div>
+                               -->
+                               </div>
+                               <div class="Catalog_rightnei">
+                                    <div class="Catalogtitwo"></div>
+                                    <div class="Catalogcontent">
+                                        <div class="Catalogcontentup">
+                                        	
+                                        </div>
+                                       
+                                    </div>
+                               </div>
+                               <div class="Catalog_rightnei">
+                                    <div class="Catalogtitwo"></div>
+                                    <div class="Catalogcontent">
+                                      <div class="Catalogcontentup"></div>
+                                      
+                                    </div>
+                               </div>
+                           </div>
+                           <div class="clear"></div>
+                       </div>
+                    </div>
+                </div>
